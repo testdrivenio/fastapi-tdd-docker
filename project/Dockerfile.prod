@@ -1,3 +1,39 @@
+###########
+# BUILDER #
+###########
+
+# pull official base image
+FROM python:3.8.3-slim-buster as builder
+
+# install system dependencies
+RUN apt-get update \
+  && apt-get -y install gcc postgresql \
+  && apt-get clean
+
+# set work directory
+WORKDIR /usr/src/app
+
+# set environment varibles
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install dependencies
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+
+# lint
+COPY . /usr/src/app/
+RUN pip install black flake8 isort
+RUN flake8 .
+RUN black --exclude=migrations .
+RUN isort ./**/*.py
+
+
+#########
+# FINAL #
+#########
+
 # pull official base image
 FROM python:3.8.3-slim-buster
 
@@ -13,7 +49,7 @@ ENV APP_HOME=/home/app/web
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
-# set environment varibles
+# set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV ENVIRONMENT prod
@@ -25,15 +61,16 @@ RUN apt-get update \
   && apt-get clean
 
 # install python dependencies
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache /wheels/*
 
 # add app
 COPY . .
 
 # chown all the files to the app user
-RUN chown -R app:app $APP_HOME
+RUN chown -R app:app $HOME
 
 # change to the app user
 USER app
