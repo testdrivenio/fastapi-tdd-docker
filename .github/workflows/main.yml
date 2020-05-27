@@ -3,7 +3,7 @@ name: Continuous Integration and Delivery
 on: [push]
 
 env:
-  IMAGE: docker.pkg.github.com/$GITHUB_REPOSITORY/web
+  IMAGE: docker.pkg.github.com/$GITHUB_REPOSITORY/foo
 
 jobs:
 
