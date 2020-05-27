@@ -1,0 +1,72 @@
+name: Continuous Integration and Delivery
+
+on: [push]
+
+env:
+  IMAGE: docker.pkg.github.com/$GITHUB_REPOSITORY/web
+
+jobs:
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v1
+      - name: Log in to GitHub Packages
+        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull image
+        run: |
+          docker pull ${{ env.IMAGE }}:latest || true
+      - name: Build image
+        run: |
+          docker build \
+            --cache-from ${{ env.IMAGE }}:latest \
+            --tag ${{ env.IMAGE }}:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+      - name: Push image
+        run: |
+          docker push ${{ env.IMAGE }}:latest
+
+  test:
+    name: Test Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v1
+      - name: Log in to GitHub Packages
+        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull image
+        run: |
+          docker pull ${{ env.IMAGE }}:latest || true
+      - name: Build image
+        run: |
+          docker build \
+            --cache-from ${{ env.IMAGE }}:latest \
+            --tag ${{ env.IMAGE }}:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+      - name: Run container
+        run: |
+          docker run \
+            -d \
+            --name fastapi-tdd \
+            -e PORT=8765 \
+            -e ENVIRONMENT=dev \
+            -e DATABASE_TEST_URL=sqlite://sqlite.db \
+            -p 5003:8765 \
+            ${{ env.IMAGE }}:latest
+      - name: Pytest
+        run: docker exec fastapi-tdd python -m pytest .
+      - name: Flake8
+        run: docker exec fastapi-tdd python -m flake8 .
+      - name: Black
+        run: docker exec fastapi-tdd python -m black . --check
+      - name: isort
+        run: docker exec fastapi-tdd /bin/sh -c "python -m isort ./*/*.py --check-only"

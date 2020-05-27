@@ -1,18 +1,35 @@
 # project/app/main.py
 
 
-from fastapi import FastAPI, Depends
+import logging
 
-from app.config import get_settings, Settings
+from fastapi import FastAPI
+
+from app.api import ping, summaries
+from app.db import init_db
+
+log = logging.getLogger(__name__)
 
 
-app = FastAPI()
+def create_application() -> FastAPI:
+    application = FastAPI()
+    application.include_router(ping.router)
+    application.include_router(
+        summaries.router, prefix="/summaries", tags=["summaries"]
+    )
+
+    return application
 
 
-@app.get("/ping")
-async def pong(settings: Settings = Depends(get_settings)):
-    return {
-        "ping": "pong!",
-        "environment": settings.environment,
-        "testing": settings.testing
-    }
+app = create_application()
+
+
+@app.on_event("startup")
+async def startup_event():
+    log.info("Starting up...")
+    init_db(app)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    log.info("Shutting down...")
