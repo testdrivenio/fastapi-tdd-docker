@@ -3,7 +3,7 @@ name: Continuous Integration and Delivery
 on: [push]
 
 env:
-  IMAGE: docker.pkg.github.com/$GITHUB_REPOSITORY/foo
+  IMAGE: docker.pkg.github.com/$GITHUB_REPOSITORY/web
 
 jobs:
 
@@ -17,19 +17,27 @@ jobs:
         run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull image
+      - name: Pull images
         run: |
-          docker pull ${{ env.IMAGE }}:latest || true
-      - name: Build image
+          docker pull ${{ env.IMAGE }}-builder:latest || true
+          docker pull ${{ env.IMAGE }}-final:latest || true
+      - name: Build images
         run: |
           docker build \
-            --cache-from ${{ env.IMAGE }}:latest \
-            --tag ${{ env.IMAGE }}:latest \
+            --target builder \
+            --cache-from ${{ env.IMAGE }}-builder:latest \
+            --tag ${{ env.IMAGE }}-builder:latest \
             --file ./project/Dockerfile.prod \
             "./project"
-      - name: Push image
+          docker build \
+            --cache-from ${{ env.IMAGE }}-final:latest \
+            --tag ${{ env.IMAGE }}-final:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+      - name: Push images
         run: |
-          docker push ${{ env.IMAGE }}:latest
+          docker push ${{ env.IMAGE }}-builder:latest
+          docker push ${{ env.IMAGE }}-final:latest
 
   test:
     name: Test Docker Image
@@ -42,14 +50,21 @@ jobs:
         run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull image
+      - name: Pull images
         run: |
-          docker pull ${{ env.IMAGE }}:latest || true
-      - name: Build image
+          docker pull ${{ env.IMAGE }}-builder:latest || true
+          docker pull ${{ env.IMAGE }}-final:latest || true
+      - name: Build images
         run: |
           docker build \
-            --cache-from ${{ env.IMAGE }}:latest \
-            --tag ${{ env.IMAGE }}:latest \
+            --target builder \
+            --cache-from ${{ env.IMAGE }}-builder:latest \
+            --tag ${{ env.IMAGE }}-builder:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+          docker build \
+            --cache-from ${{ env.IMAGE }}-final:latest \
+            --tag ${{ env.IMAGE }}-final:latest \
             --file ./project/Dockerfile.prod \
             "./project"
       - name: Run container
@@ -61,15 +76,17 @@ jobs:
             -e ENVIRONMENT=dev \
             -e DATABASE_TEST_URL=sqlite://sqlite.db \
             -p 5003:8765 \
-            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}-final:latest
+      - name: Install requirements
+        run: docker exec fastapi-tdd pip install black flake8 isort pytest
       - name: Pytest
-        run: docker exec fastapi-tdd python -m pytest .
+        run: docker exec fastapi-tdd pytest .
       - name: Flake8
-        run: docker exec fastapi-tdd python -m flake8 .
+        run: docker exec fastapi-tdd flake8 .
       - name: Black
-        run: docker exec fastapi-tdd python -m black . --check
+        run: docker exec fastapi-tdd black . --check
       - name: isort
-        run: docker exec fastapi-tdd /bin/sh -c "python -m isort ./*/*.py --check-only"
+        run: docker exec fastapi-tdd /bin/sh -c "isort ./*/*.py --check-only"
 
   deploy:
     name: Deploy to Heroku
@@ -77,7 +94,7 @@ jobs:
     needs: [build, test]
     env:
       HEROKU_APP_NAME: salty-fortress-93778
-      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/foo
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
@@ -85,13 +102,21 @@ jobs:
         run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull image
+      - name: Pull images
         run: |
-          docker pull ${{ env.IMAGE }}:latest || true
-      - name: Build image
+          docker pull ${{ env.IMAGE }}-builder:latest || true
+          docker pull ${{ env.IMAGE }}-final:latest || true
+      - name: Build images
         run: |
           docker build \
-            --cache-from ${{ env.IMAGE }}:latest \
+            --target builder \
+            --cache-from ${{ env.IMAGE }}-builder:latest \
+            --tag ${{ env.IMAGE }}-builder:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+          docker build \
+            --cache-from ${{ env.IMAGE }}-final:latest \
+            --tag ${{ env.IMAGE }}:latest \
             --tag ${{ env.HEROKU_REGISTRY_IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
             "./project"
@@ -100,7 +125,7 @@ jobs:
         env:
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
       - name: Push to the registry
-        run: docker push ${{ env.HEROKU_REGISTRY_IMAGE }}
+        run: docker push ${{ env.HEROKU_REGISTRY_IMAGE }}:latest
       - name: Set environment variables
         run: |
           echo ::set-env name=HEROKU_REGISTRY_IMAGE::${{ env.HEROKU_REGISTRY_IMAGE }}
