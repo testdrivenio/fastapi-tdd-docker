@@ -3,7 +3,7 @@ name: Continuous Integration and Delivery
 on: [push]
 
 env:
-  IMAGE: docker.pkg.github.com/$GITHUB_REPOSITORY/web
+  IMAGE: docker.pkg.github.com/$GITHUB_REPOSITORY/foo
 
 jobs:
 
@@ -80,13 +80,13 @@ jobs:
       - name: Install requirements
         run: docker exec fastapi-tdd pip install black flake8 isort pytest
       - name: Pytest
-        run: docker exec fastapi-tdd pytest .
+        run: docker exec fastapi-tdd python -m pytest .
       - name: Flake8
-        run: docker exec fastapi-tdd flake8 .
+        run: docker exec fastapi-tdd python -m flake8 .
       - name: Black
-        run: docker exec fastapi-tdd black . --check
+        run: docker exec fastapi-tdd python -m black . --check
       - name: isort
-        run: docker exec fastapi-tdd /bin/sh -c "isort ./*/*.py --check-only"
+        run: docker exec fastapi-tdd /bin/sh -c "python -m isort ./*/*.py --check-only"
 
   deploy:
     name: Deploy to Heroku
@@ -94,7 +94,7 @@ jobs:
     needs: [build, test]
     env:
       HEROKU_APP_NAME: salty-fortress-93778
-      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/foo
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
