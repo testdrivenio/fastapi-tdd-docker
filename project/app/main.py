@@ -1,6 +1,3 @@
-# project/app/main.py
-
-
 import logging
 
 from fastapi import FastAPI
@@ -8,7 +5,7 @@ from fastapi import FastAPI
 from app.api import ping, summaries
 from app.db import init_db
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("uvicorn")
 
 
 def create_application() -> FastAPI:

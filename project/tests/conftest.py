@@ -1,6 +1,3 @@
-# project/tests/conftest.py
-
-
 import os
 
 import pytest
