@@ -1,6 +1,3 @@
-# project/tests/test_summaries.py
-
-
 import json
 
 import pytest
@@ -28,7 +25,7 @@ def test_create_summaries_invalid_json(test_app):
     assert response.json() == {
         "detail": [
             {
-                "loc": ["body", "payload", "url"],
+                "loc": ["body", "url"],
                 "msg": "field required",
                 "type": "value_error.missing",
             }
@@ -184,12 +181,12 @@ def test_update_summary(test_app_with_db, monkeypatch):
             422,
             [
                 {
-                    "loc": ["body", "payload", "url"],
+                    "loc": ["body", "url"],
                     "msg": "field required",
                     "type": "value_error.missing",
                 },
                 {
-                    "loc": ["body", "payload", "summary"],
+                    "loc": ["body", "summary"],
                     "msg": "field required",
                     "type": "value_error.missing",
                 },
@@ -201,7 +198,7 @@ def test_update_summary(test_app_with_db, monkeypatch):
             422,
             [
                 {
-                    "loc": ["body", "payload", "summary"],
+                    "loc": ["body", "summary"],
                     "msg": "field required",
                     "type": "value_error.missing",
                 }

@@ -1,6 +1,3 @@
-# project/tests/test_summaries_unit.py
-
-
 import json
 from datetime import datetime
 
@@ -23,7 +20,10 @@ def test_create_summary(test_app, monkeypatch):
 
     monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-    response = test_app.post("/summaries/", data=json.dumps(test_request_payload),)
+    response = test_app.post(
+        "/summaries/",
+        data=json.dumps(test_request_payload),
+    )
 
     assert response.status_code == 201
     assert response.json() == test_response_payload
@@ -35,7 +35,7 @@ def test_create_summaries_invalid_json(test_app):
     assert response.json() == {
         "detail": [
             {
-                "loc": ["body", "payload", "url"],
+                "loc": ["body", "url"],
                 "msg": "field required",
                 "type": "value_error.missing",
             }
@@ -148,7 +148,10 @@ def test_update_summary(test_app, monkeypatch):
 
     monkeypatch.setattr(crud, "put", mock_put)
 
-    response = test_app.put("/summaries/1/", data=json.dumps(test_request_payload),)
+    response = test_app.put(
+        "/summaries/1/",
+        data=json.dumps(test_request_payload),
+    )
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
@@ -181,12 +184,12 @@ def test_update_summary(test_app, monkeypatch):
             422,
             [
                 {
-                    "loc": ["body", "payload", "url"],
+                    "loc": ["body", "url"],
                     "msg": "field required",
                     "type": "value_error.missing",
                 },
                 {
-                    "loc": ["body", "payload", "summary"],
+                    "loc": ["body", "summary"],
                     "msg": "field required",
                     "type": "value_error.missing",
                 },
@@ -198,7 +201,7 @@ def test_update_summary(test_app, monkeypatch):
             422,
             [
                 {
-                    "loc": ["body", "payload", "summary"],
+                    "loc": ["body", "summary"],
                     "msg": "field required",
                     "type": "value_error.missing",
                 }

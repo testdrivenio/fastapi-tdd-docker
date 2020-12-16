@@ -1,18 +1,16 @@
-# project/app/api/summaries.py
-
-
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Path, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Path
 
 from app.api import crud
-from app.models.pydantic import (
+from app.models.tortoise import SummarySchema
+from app.summarizer import generate_summary
+
+from app.models.pydantic import (  # isort:skip
     SummaryPayloadSchema,
     SummaryResponseSchema,
     SummaryUpdatePayloadSchema,
 )
-from app.models.tortoise import SummarySchema
-from app.summarizer import generate_summary
 
 
 router = APIRouter()

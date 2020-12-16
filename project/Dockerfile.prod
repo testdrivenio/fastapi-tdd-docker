@@ -3,7 +3,7 @@
 ###########
 
 # pull official base image
-FROM python:3.8.3-slim-buster as builder
+FROM python:3.8.6-slim-buster as builder
 
 # install system dependencies
 RUN apt-get update \
@@ -13,7 +13,7 @@ RUN apt-get update \
 # set work directory
 WORKDIR /usr/src/app
 
-# set environment varibles
+# set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
@@ -24,10 +24,10 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 
 # lint
 COPY . /usr/src/app/
-RUN pip install black flake8 isort
+RUN pip install black==20.8b1 flake8===3.8.4 isort==5.6.4
 RUN flake8 .
 RUN black --exclude=migrations .
-RUN isort ./**/*.py
+RUN isort .
 
 
 #########
@@ -35,7 +35,7 @@ RUN isort ./**/*.py
 #########
 
 # pull official base image
-FROM python:3.8.3-slim-buster
+FROM python:3.8.6-slim-buster
 
 # create directory for the app user
 RUN mkdir -p /home/app
@@ -65,6 +65,7 @@ COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
+RUN pip install "uvicorn[standard]==0.13.1"
 
 # add app
 COPY . .

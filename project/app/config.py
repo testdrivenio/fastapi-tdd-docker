@@ -1,13 +1,10 @@
-# project/app/config.py
-
-
 import logging
 import os
 from functools import lru_cache
 
 from pydantic import AnyUrl, BaseSettings
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("uvicorn")
 
 
 class Settings(BaseSettings):
