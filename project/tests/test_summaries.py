@@ -1,6 +1,3 @@
-# project/tests/test_summaries.py
-
-
 import json
 
 import pytest
