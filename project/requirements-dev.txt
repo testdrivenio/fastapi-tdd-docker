@@ -1,8 +1,0 @@
-black==20.8b1
-flake8===3.8.4
-isort==5.7.0
-pytest==6.2.2
-pytest-cov==2.11.1
-pytest-xdist==2.2.1
-
--r requirements.txt
