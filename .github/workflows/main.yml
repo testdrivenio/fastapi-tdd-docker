@@ -17,19 +17,27 @@ jobs:
         run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull image
+      - name: Pull images
         run: |
-          docker pull ${{ env.IMAGE }}:latest || true
-      - name: Build image
+          docker pull ${{ env.IMAGE }}-builder:latest || true
+          docker pull ${{ env.IMAGE }}-final:latest || true
+      - name: Build images
         run: |
           docker build \
-            --cache-from ${{ env.IMAGE }}:latest \
-            --tag ${{ env.IMAGE }}:latest \
+            --target builder \
+            --cache-from ${{ env.IMAGE }}-builder:latest \
+            --tag ${{ env.IMAGE }}-builder:latest \
             --file ./project/Dockerfile.prod \
             "./project"
-      - name: Push image
+          docker build \
+            --cache-from ${{ env.IMAGE }}-final:latest \
+            --tag ${{ env.IMAGE }}-final:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+      - name: Push images
         run: |
-          docker push ${{ env.IMAGE }}:latest
+          docker push ${{ env.IMAGE }}-builder:latest
+          docker push ${{ env.IMAGE }}-final:latest
 
   test:
     name: Test Docker Image
@@ -42,14 +50,21 @@ jobs:
         run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull image
+      - name: Pull images
         run: |
-          docker pull ${{ env.IMAGE }}:latest || true
-      - name: Build image
+          docker pull ${{ env.IMAGE }}-builder:latest || true
+          docker pull ${{ env.IMAGE }}-final:latest || true
+      - name: Build images
         run: |
           docker build \
-            --cache-from ${{ env.IMAGE }}:latest \
-            --tag ${{ env.IMAGE }}:latest \
+            --target builder \
+            --cache-from ${{ env.IMAGE }}-builder:latest \
+            --tag ${{ env.IMAGE }}-builder:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+          docker build \
+            --cache-from ${{ env.IMAGE }}-final:latest \
+            --tag ${{ env.IMAGE }}-final:latest \
             --file ./project/Dockerfile.prod \
             "./project"
       - name: Run container
@@ -61,7 +76,9 @@ jobs:
             -e ENVIRONMENT=dev \
             -e DATABASE_TEST_URL=sqlite://sqlite.db \
             -p 5003:8765 \
-            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}-final:latest
+      - name: Install requirements
+        run: docker exec fastapi-tdd pip install black==21.6b0 flake8==3.9.2 isort==5.9.1 pytest==6.2.4
       - name: Pytest
         run: docker exec fastapi-tdd python -m pytest .
       - name: Flake8
@@ -85,13 +102,21 @@ jobs:
         run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin docker.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull image
+      - name: Pull images
         run: |
-          docker pull ${{ env.IMAGE }}:latest || true
-      - name: Build image
+          docker pull ${{ env.IMAGE }}-builder:latest || true
+          docker pull ${{ env.IMAGE }}-final:latest || true
+      - name: Build images
         run: |
           docker build \
-            --cache-from ${{ env.IMAGE }}:latest \
+            --target builder \
+            --cache-from ${{ env.IMAGE }}-builder:latest \
+            --tag ${{ env.IMAGE }}-builder:latest \
+            --file ./project/Dockerfile.prod \
+            "./project"
+          docker build \
+            --cache-from ${{ env.IMAGE }}-final:latest \
+            --tag ${{ env.IMAGE }}:latest \
             --tag ${{ env.HEROKU_REGISTRY_IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
             "./project"
@@ -100,7 +125,7 @@ jobs:
         env:
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
       - name: Push to the registry
-        run: docker push ${{ env.HEROKU_REGISTRY_IMAGE }}
+        run: docker push ${{ env.HEROKU_REGISTRY_IMAGE }}:latest
       - name: Set environment variables
         run: |
           echo "HEROKU_REGISTRY_IMAGE=${{ env.HEROKU_REGISTRY_IMAGE }}" >> $GITHUB_ENV
