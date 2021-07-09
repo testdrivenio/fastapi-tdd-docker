@@ -11,6 +11,17 @@ from tortoise.contrib.fastapi import register_tortoise
 log = logging.getLogger("uvicorn")
 
 
+TORTOISE_ORM = {
+    "connections": {"default": os.environ.get("DATABASE_URL")},
+    "apps": {
+        "models": {
+            "models": ["app.models.tortoise", "aerich.models"],
+            "default_connection": "default",
+        },
+    },
+}
+
+
 def init_db(app: FastAPI) -> None:
     register_tortoise(
         app,

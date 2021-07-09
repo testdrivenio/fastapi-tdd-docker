@@ -1,3 +1,6 @@
+# project/app/summarizer.py
+
+
 import nltk
 from newspaper import Article
 
