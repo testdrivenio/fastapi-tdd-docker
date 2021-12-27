@@ -1,6 +1,3 @@
-# project/tests/test_summaries_unit.py
-
-
 import json
 from datetime import datetime
 

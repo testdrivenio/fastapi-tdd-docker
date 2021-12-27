@@ -1,6 +1,3 @@
-# project/app/api/summaries.py
-
-
 from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Path

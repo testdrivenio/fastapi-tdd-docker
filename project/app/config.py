@@ -1,6 +1,3 @@
-# project/app/config.py
-
-
 import logging
 import os
 from functools import lru_cache

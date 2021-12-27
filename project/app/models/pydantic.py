@@ -1,6 +1,3 @@
-# project/app/models/pydantic.py
-
-
 from pydantic import AnyHttpUrl, BaseModel
 
 

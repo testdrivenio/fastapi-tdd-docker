@@ -1,6 +1,3 @@
-# project/app/api/crud.py
-
-
 from typing import List, Union
 
 from app.models.pydantic import SummaryPayloadSchema
@@ -16,7 +13,7 @@ async def post(payload: SummaryPayloadSchema) -> int:
 async def get(id: int) -> Union[dict, None]:
     summary = await TextSummary.filter(id=id).first().values()
     if summary:
-        return summary[0]
+        return summary
     return None
 
 
@@ -36,5 +33,5 @@ async def put(id: int, payload: SummaryPayloadSchema) -> Union[dict, None]:
     )
     if summary:
         updated_summary = await TextSummary.filter(id=id).first().values()
-        return updated_summary[0]
+        return updated_summary
     return None
