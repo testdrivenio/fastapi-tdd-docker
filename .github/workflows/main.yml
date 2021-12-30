@@ -6,7 +6,6 @@ env:
   IMAGE: docker.pkg.github.com/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer
 
 jobs:
-
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
@@ -98,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test]
     env:
-      HEROKU_APP_NAME: sleepy-thicket-77414
+      HEROKU_APP_NAME: mysterious-meadow-33322
       HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/summarizer
     steps:
       - name: Checkout
