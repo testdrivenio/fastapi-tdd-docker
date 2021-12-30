@@ -3,7 +3,7 @@ name: Continuous Integration and Delivery
 on: [push]
 
 env:
-  IMAGE: docker.pkg.github.com/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer1
+  IMAGE: docker.pkg.github.com/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer
 
 jobs:
   build:
@@ -127,7 +127,7 @@ jobs:
             --file ./project/Dockerfile.prod \
             "./project"
       - name: Log in to the Heroku Container Registry
-        run: echo ${HEROKU_AUTH_TOKEN} | docker login -u _ --password-stdin  registry.heroku.com
+        run: docker login -u _ -p ${HEROKU_AUTH_TOKEN} registry.heroku.com
         env:
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
       - name: Push to the registry
