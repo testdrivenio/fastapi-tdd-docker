@@ -83,7 +83,7 @@ jobs:
             -p 5003:8765 \
             ${{ env.IMAGE }}-final:latest
       - name: Install requirements
-        run: docker exec fastapi-tdd pip install black==23.1.0 flake8==6.0.0 isort==5.12.0 pytest==7.2.2
+        run: docker exec fastapi-tdd pip install black==23.12.1 flake8==7.0.0 isort==5.13.2 pytest==7.4.4
       - name: Pytest
         run: docker exec fastapi-tdd python -m pytest .
       - name: Flake8
@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test]
     env:
-      HEROKU_APP_NAME: radiant-everglades-49858
+      HEROKU_APP_NAME: quiet-citadel-80656
       HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/summarizer
     steps:
       - name: Checkout
