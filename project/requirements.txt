@@ -1,8 +1,9 @@
-aerich==0.7.1
-asyncpg==0.27.0
-fastapi==0.94.1
-gunicorn==20.1.0
-httpx==0.23.3
+aerich==0.7.2
+asyncpg==0.29.0
+fastapi==0.109.0
+gunicorn==21.0.1
+httpx==0.26.0
 newspaper3k==0.2.8
-tortoise-orm==0.19.3
-uvicorn==0.21.1
+pydantic-settings==2.1.0
+tortoise-orm==0.20.0
+uvicorn==0.26.0

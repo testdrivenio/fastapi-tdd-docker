@@ -3,11 +3,11 @@
 ###########
 
 # pull official base image
-FROM python:3.11.2-slim-buster as builder
+FROM python:3.12.1-slim-bookworm as builder
 
 # install system dependencies
 RUN apt-get update \
-  && apt-get -y install gcc postgresql \
+  && apt-get -y install netcat-traditional gcc postgresql \
   && apt-get clean
 
 # set work directory
@@ -24,10 +24,10 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 
 # lint
 COPY . /usr/src/app/
-RUN pip install black==23.1.0 flake8==6.0.0 isort==5.12.0
+RUN pip install black==23.12.1 flake8==7.0.0 isort==5.13.2
 RUN flake8 .
-RUN black --exclude=migrations .
-RUN isort .
+RUN black --exclude=migrations . --check
+RUN isort . --check-only
 
 
 #########
@@ -35,7 +35,7 @@ RUN isort .
 #########
 
 # pull official base image
-FROM python:3.11.2-slim-buster
+FROM python:3.12.1-slim-bookworm
 
 # create directory for the app user
 RUN mkdir -p /home/app
@@ -57,7 +57,7 @@ ENV TESTING 0
 
 # install system dependencies
 RUN apt-get update \
-  && apt-get -y install netcat gcc postgresql \
+  && apt-get -y install netcat-traditional gcc postgresql \
   && apt-get clean
 
 # install python dependencies
@@ -65,7 +65,7 @@ COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
-RUN pip install "uvicorn[standard]==0.21.1"
+RUN pip install "uvicorn[standard]==0.26.0"
 
 # add app
 COPY . .

@@ -15,11 +15,6 @@ from app.models.pydantic import (  # isort:skip
 router = APIRouter()
 
 
-@router.get("/", response_model=List[SummarySchema])
-async def read_all_summaries() -> List[SummarySchema]:
-    return await crud.get_all()
-
-
 @router.get("/{id}/", response_model=SummarySchema)
 async def read_summary(id: int = Path(..., gt=0)) -> SummarySchema:
     summary = await crud.get(id)
@@ -29,13 +24,18 @@ async def read_summary(id: int = Path(..., gt=0)) -> SummarySchema:
     return summary
 
 
+@router.get("/", response_model=List[SummarySchema])
+async def read_all_summaries() -> List[SummarySchema]:
+    return await crud.get_all()
+
+
 @router.post("/", response_model=SummaryResponseSchema, status_code=201)
 async def create_summary(
     payload: SummaryPayloadSchema, background_tasks: BackgroundTasks
 ) -> SummaryResponseSchema:
     summary_id = await crud.post(payload)
 
-    background_tasks.add_task(generate_summary, summary_id, payload.url)
+    background_tasks.add_task(generate_summary, summary_id, str(payload.url))
 
     response_object = {"id": summary_id, "url": payload.url}
     return response_object
