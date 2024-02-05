@@ -1,6 +1,6 @@
 aerich==0.7.2
 asyncpg==0.29.0
-fastapi==0.109.0
+fastapi==0.109.1
 gunicorn==21.0.1
 httpx==0.26.0
 newspaper3k==0.2.8
