@@ -39,7 +39,6 @@ def test_create_summaries_invalid_json(test_app):
                 "loc": ["body", "url"],
                 "msg": "Field required",
                 "input": {},
-                "url": "https://errors.pydantic.dev/2.5/v/missing",
             }
         ]
     }
@@ -180,7 +179,6 @@ def test_update_summary(test_app, monkeypatch):
                     "msg": "Input should be greater than 0",
                     "input": "0",
                     "ctx": {"gt": 0},
-                    "url": "https://errors.pydantic.dev/2.5/v/greater_than",
                 }
             ],
         ],
@@ -194,14 +192,12 @@ def test_update_summary(test_app, monkeypatch):
                     "loc": ["body", "url"],
                     "msg": "Field required",
                     "input": {},
-                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 },
                 {
                     "type": "missing",
                     "loc": ["body", "summary"],
                     "msg": "Field required",
                     "input": {},
-                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 },
             ],
         ],
@@ -215,7 +211,6 @@ def test_update_summary(test_app, monkeypatch):
                     "loc": ["body", "summary"],
                     "msg": "Field required",
                     "input": {"url": "https://foo.bar"},
-                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 }
             ],
         ],

@@ -29,7 +29,6 @@ def test_create_summaries_invalid_json(test_app):
                 "loc": ["body", "url"],
                 "msg": "Field required",
                 "type": "missing",
-                "url": "https://errors.pydantic.dev/2.5/v/missing",
             }
         ]
     }
@@ -48,7 +47,7 @@ def test_read_summary(test_app_with_db, monkeypatch):
     monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
     response = test_app_with_db.post(
-        "/summaries/", data=json.dumps({"url": "https://foo.bar"})
+        "/summaries/", data=json.dumps({"url": "https://foo.bar/"})
     )
     summary_id = response.json()["id"]
 
@@ -76,7 +75,6 @@ def test_read_summary_incorrect_id(test_app_with_db):
                 "loc": ["path", "id"],
                 "msg": "Input should be greater than 0",
                 "type": "greater_than",
-                "url": "https://errors.pydantic.dev/2.5/v/greater_than",
             }
         ]
     }
@@ -89,7 +87,7 @@ def test_read_all_summaries(test_app_with_db, monkeypatch):
     monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
     response = test_app_with_db.post(
-        "/summaries/", data=json.dumps({"url": "https://foo.bar"})
+        "/summaries/", data=json.dumps({"url": "https://foo.bar/"})
     )
     summary_id = response.json()["id"]
 
@@ -107,7 +105,7 @@ def test_remove_summary(test_app_with_db, monkeypatch):
     monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
     response = test_app_with_db.post(
-        "/summaries/", data=json.dumps({"url": "https://foo.bar"})
+        "/summaries/", data=json.dumps({"url": "https://foo.bar/"})
     )
     summary_id = response.json()["id"]
 
@@ -131,7 +129,6 @@ def test_remove_summary_incorrect_id(test_app_with_db):
                 "loc": ["path", "id"],
                 "msg": "Input should be greater than 0",
                 "type": "greater_than",
-                "url": "https://errors.pydantic.dev/2.5/v/greater_than",
             }
         ]
     }
@@ -144,13 +141,13 @@ def test_update_summary(test_app_with_db, monkeypatch):
     monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
     response = test_app_with_db.post(
-        "/summaries/", data=json.dumps({"url": "https://foo.bar"})
+        "/summaries/", data=json.dumps({"url": "https://foo.bar/"})
     )
     summary_id = response.json()["id"]
 
     response = test_app_with_db.put(
         f"/summaries/{summary_id}/",
-        data=json.dumps({"url": "https://foo.bar", "summary": "updated!"}),
+        data=json.dumps({"url": "https://foo.bar/", "summary": "updated!"}),
     )
     assert response.status_code == 200
 
@@ -166,13 +163,13 @@ def test_update_summary(test_app_with_db, monkeypatch):
     [
         [
             999,
-            {"url": "https://foo.bar", "summary": "updated!"},
+            {"url": "https://foo.bar/", "summary": "updated!"},
             404,
             "Summary not found",
         ],
         [
             0,
-            {"url": "https://foo.bar", "summary": "updated!"},
+            {"url": "https://foo.bar/", "summary": "updated!"},
             422,
             [
                 {
@@ -181,7 +178,6 @@ def test_update_summary(test_app_with_db, monkeypatch):
                     "msg": "Input should be greater than 0",
                     "input": "0",
                     "ctx": {"gt": 0},
-                    "url": "https://errors.pydantic.dev/2.5/v/greater_than",
                 }
             ],
         ],
@@ -195,28 +191,25 @@ def test_update_summary(test_app_with_db, monkeypatch):
                     "loc": ["body", "url"],
                     "msg": "Field required",
                     "input": {},
-                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 },
                 {
                     "type": "missing",
                     "loc": ["body", "summary"],
                     "msg": "Field required",
                     "input": {},
-                    "url": "https://errors.pydantic.dev/2.5/v/missing",
                 },
             ],
         ],
         [
             1,
-            {"url": "https://foo.bar"},
+            {"url": "https://foo.bar/"},
             422,
             [
                 {
                     "type": "missing",
                     "loc": ["body", "summary"],
                     "msg": "Field required",
-                    "input": {"url": "https://foo.bar"},
-                    "url": "https://errors.pydantic.dev/2.5/v/missing",
+                    "input": {"url": "https://foo.bar/"},
                 }
             ],
         ],
