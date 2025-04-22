@@ -3,7 +3,7 @@
 ###########
 
 # pull official base image
-FROM python:3.12.1-slim-bookworm as builder
+FROM python:3.13.3-slim-bookworm as builder
 
 # install system dependencies
 RUN apt-get update \
@@ -24,7 +24,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 
 # lint
 COPY . /usr/src/app/
-RUN pip install black==23.12.1 flake8==7.0.0 isort==5.13.2
+RUN pip install black==25.1.0 flake8==7.2.0 isort==6.0.1
 RUN flake8 .
 RUN black --exclude=migrations . --check
 RUN isort . --check-only
@@ -35,7 +35,7 @@ RUN isort . --check-only
 #########
 
 # pull official base image
-FROM python:3.12.1-slim-bookworm
+FROM python:3.13.3-slim-bookworm
 
 # create directory for the app user
 RUN mkdir -p /home/app
@@ -65,7 +65,7 @@ COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
-RUN pip install "uvicorn[standard]==0.26.0"
+RUN pip install "uvicorn[standard]==0.34.1"
 
 # add app
 COPY . .
